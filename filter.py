@@ -1,33 +1,58 @@
+# -*- coding: utf-8 -*- 
 import os, io
 from tqdm import tqdm
 from hanziconv import HanziConv as cc
 
-filter_rules = ['Wikipedia:', 'Help:', 'Topic:', 'Draft:', 'Portal:', 'Fichier:', 'Wikiprojekt:']
+with open("filter_rules.txt") as f:
+        filter_rules = [l[:-1] for l in f.readlines()]
+
+frs = {}
+
 
 #Remove ill-formed articles from the copora
 data_dir = 'dataset_original'
 for f in os.listdir(data_dir):
-    if f.split('.')[-1] == 'rel':
+    if f.split('.')[-1] == 'documents':
 
-        source, target = f.split('.')[0].split('2')
-        source_file = os.path.join('dataset', 'wiki_%s.queries' % source)
-        target_file = os.path.join('dataset', 'wiki_%s.documents' % target)
+        src_file = os.path.join('dataset_original', '%s' % f)
+        good_file = os.path.join('dataset', '%s' % f)
+        bad_file = os.path.join('dataset_original', '%s.bad' % f)
 
-        queries = {}
-        with open(source_file) as sourcef:
-            for l in sourcef:
-                id, title, query = l[:-1].split('\t')
-                queries[int(id)] = (title, query) 
+        #print good_file, bad_file
 
-        documents = {}
-        with open(target_file) as targetf:
-            for l in targetf:
-                id, title, doc = l[:-1].split('\t')
-                documents[int(id)] = (title, doc) 
+        outf1 = open(good_file, 'w')
+        outf2 = open(bad_file, 'w')
 
+        print src_file
+        with open(src_file) as f:
+            for l in tqdm(f.readlines()):
+                id, title, doc = l.split('\t')
+                good = True
+                for fr in filter_rules:
+                    if fr in title:
+                        good = False
+                        continue
 
-        outf = open(os.path.join('dataset', f), 'w')
-        with open(os.path.join(data_dir, f)) as relf:
-            #l = relf.readlines() 
-            
+                if ':' in title and len(doc.split()) <= 20:
+                    fr = title.split(':')[0] + ':'
+                    if ' ' not in fr:
+                        frs[fr] = 1
 
+                if good:
+                    doc = doc.lower().replace(title.lower(), '', 1)
+
+                    #remove "external links" and "related items" from japanese database
+                    x = doc.find('関連項目')
+                    if x != -1:
+                        doc = doc[:x]
+                    x = doc.find('外部リンク')
+                    if x != -1:
+                        doc = doc[:x]
+                   
+                    outf1.write('\t'.join([id, title, doc]))
+                else:
+                    outf2.write(l)
+
+filter_file = open('filter_rules.txt', 'w')
+for f in frs:
+    filter_file.write('%s\n' % f)

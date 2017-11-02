@@ -1,12 +1,11 @@
-import os, io
+import os, io, sys
 from tqdm import tqdm
-
-filter_rules = ['Wikipedia:', 'Help:', 'Topic:', 'Draft:', 'Portal:', 'Fichier:', 'Wikiprojekt:']
 
 #Remove ill-formed articles from the copora
 data_dir = 'dataset_original'
 for f in os.listdir(data_dir):
     if f.split('.')[-1] == 'rel':
+        print "Processing: %s" % f
 
         source, target = f.split('.')[0].split('2')
         source_file = os.path.join('dataset', 'wiki_%s.queries' % source)
@@ -21,18 +20,15 @@ for f in os.listdir(data_dir):
         documents = {}
         with open(target_file) as targetf:
             for l in targetf:
-                id, title, doc = l[:-1].split('\t')
+                id, title, doc = l[:-1].split('\t', 2)
                 documents[int(id)] = (title, doc) 
-
 
         outf = open(os.path.join('dataset', f), 'w')
         with open(os.path.join(data_dir, f)) as relf:
-            for l in tqdm(relf):
+            for l in tqdm(relf.readlines()):
                 src, rand, target, rel = l[:-1].split('\t')
                 src = int(src)
                 target = int(target)
 
                 if src in queries and target in documents:
                     outf.write('\t'.join([str(src), str(target), rel])+'\n')
-            
-

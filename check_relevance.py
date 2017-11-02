@@ -72,8 +72,8 @@ else:
 
 
     random_next()
-    n = raw_input("Press enter to quit (q to quit):")
+    n = raw_input("Press enter to get another random doc (q to quit):")
     while n != 'q' and n != 'Q':
         random_next()
-        n = raw_input("Press enter to quit (q to quit):")
+        n = raw_input("Press enter to get another random doc (q to quit):")
 

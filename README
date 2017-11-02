@@ -6,3 +6,15 @@ http://github.com/berniey/hanziconv
 stanford segmenter
 tokenize chinese language
 
+filter.py
+---------
+filter out ill-formed documents, such as Wikipedia:, Help: PortalA
+
+fix_query.py
+------------
+Regenerate the query from raw wikipedia documents. 
+Previously, title words were not deleted from queries properly.
+
+fix_rel.py:
+----------
+Scan all the rel and documents files and remove the lines with deleted wikipedia articles
